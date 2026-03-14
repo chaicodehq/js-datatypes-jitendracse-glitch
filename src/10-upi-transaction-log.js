@@ -47,5 +47,75 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+  // Validate input
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+  
+  // Filter valid transactions
+  const validTransactions = transactions.filter(t => 
+    typeof t.amount === 'number' && t.amount > 0 &&
+    (t.type === 'credit' || t.type === 'debit')
+  );
+  
+  if (validTransactions.length === 0) return null;
+  
+  // Calculate credit and debit
+  const totalCredit = validTransactions
+    .filter(t => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const totalDebit = validTransactions
+    .filter(t => t.type === 'debit')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const netBalance = totalCredit - totalDebit;
+  
+  // Calculate averages
+  const allAmounts = validTransactions.map(t => t.amount);
+  const totalAmount = allAmounts.reduce((sum, a) => sum + a, 0);
+  const avgTransaction = Math.round(totalAmount / validTransactions.length);
+  
+  // Find highest transaction
+  const highestTransaction = validTransactions.reduce((max, t) => 
+    t.amount > max.amount ? t : max
+  );
+  
+  // Category breakdown
+  const categoryBreakdown = validTransactions.reduce((acc, t) => {
+    acc[t.category] = (acc[t.category] || 0) + t.amount;
+    return acc;
+  }, {});
+  
+  // Find frequent contact
+  const contactCounts = validTransactions.reduce((acc, t) => {
+    acc[t.to] = (acc[t.to] || 0) + 1;
+    return acc;
+  }, {});
+  
+  let frequentContact = '';
+  let maxCount = 0;
+  for (const [contact, count] of Object.entries(contactCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      frequentContact = contact;
+    }
+  }
+  
+  // Check all above 100
+  const allAbove100 = validTransactions.every(t => t.amount > 100);
+  
+  // Check if any large transaction
+  const hasLargeTransaction = validTransactions.some(t => t.amount >= 5000);
+  
+  return {
+    totalCredit: totalCredit,
+    totalDebit: totalDebit,
+    netBalance: netBalance,
+    transactionCount: validTransactions.length,
+    avgTransaction: avgTransaction,
+    highestTransaction: highestTransaction,
+    categoryBreakdown: categoryBreakdown,
+    frequentContact: frequentContact,
+    allAbove100: allAbove100,
+    hasLargeTransaction: hasLargeTransaction
+  };
 }

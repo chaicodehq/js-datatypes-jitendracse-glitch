@@ -39,5 +39,51 @@
  *   //      text: "I love this song", wordCount: 4, sentiment: "love" }
  */
 export function parseWhatsAppMessage(message) {
-  // Your code here
+  // Validate input
+  if (typeof message !== 'string') return null;
+  if (!message.includes(' - ') || !message.includes(': ')) return null;
+  
+  // Extract date: from start to ", "
+  const commaSpaceIndex = message.indexOf(', ');
+  if (commaSpaceIndex === -1) return null;
+  const date = message.substring(0, commaSpaceIndex);
+  
+  // Extract time: from after ", " to " - "
+  const dashSpaceIndex = message.indexOf(' - ');
+  if (dashSpaceIndex === -1) return null;
+  const time = message.substring(commaSpaceIndex + 2, dashSpaceIndex);
+  
+  // Extract sender: from after " - " to ": "
+  const firstColonIndex = message.indexOf(': ', dashSpaceIndex);
+  if (firstColonIndex === -1) return null;
+  const sender = message.substring(dashSpaceIndex + 3, firstColonIndex);
+  
+  // Extract text: from after ": "
+  const text = message.substring(firstColonIndex + 2).trim();
+  
+  // Count words
+  const words = text.split(' ').filter(w => w.length > 0);
+  const wordCount = words.length;
+  
+  // Detect sentiment
+  let sentiment = 'neutral';
+  const lowerText = text.toLowerCase();
+  
+  // Check for funny sentiment
+  if (text.includes('😂') || text.includes(':)') || lowerText.includes('haha')) {
+    sentiment = 'funny';
+  }
+  // Check for love sentiment (only if not funny)
+  else if (text.includes('❤') || lowerText.includes('love') || lowerText.includes('pyaar')) {
+    sentiment = 'love';
+  }
+  
+  return {
+    date: date,
+    time: time,
+    sender: sender,
+    text: text,
+    wordCount: wordCount,
+    sentiment: sentiment
+  };
 }

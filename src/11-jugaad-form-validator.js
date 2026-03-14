@@ -62,5 +62,61 @@
  *   // => { isValid: false, errors: { name: "...", email: "...", ... } }
  */
 export function validateForm(formData) {
-  // Your code here
+  const errors = {};
+  
+  // 1. Validate name
+  const nameStr = formData?.name?.trim?.().toString() || '';
+  if (nameStr.length < 2 || nameStr.length > 50) {
+    errors.name = "Name must be 2-50 characters";
+  }
+  
+  // 2. Validate email
+  const email = formData?.email?.toString() || '';
+  const atCount = email.split('@').length - 1;
+  if (atCount !== 1 || !email.includes('.') || email.lastIndexOf('@') >= email.lastIndexOf('.')) {
+    errors.email = "Invalid email format";
+  }
+  
+  // 3. Validate phone
+  const phone = formData?.phone?.toString() || '';
+  const isValidPhone = phone.length === 10 && 
+                       /^[6789]\d{9}$/.test(phone);
+  if (!isValidPhone) {
+    errors.phone = "Invalid Indian phone number";
+  }
+  
+  // 4. Validate age (with JUGAAD for string numbers)
+  let age = formData?.age;
+  if (typeof age === 'string') {
+    age = parseInt(age, 10);
+  }
+  if (typeof age !== 'number' || isNaN(age) || !Number.isInteger(age) || age < 16 || age > 100) {
+    errors.age = "Age must be an integer between 16 and 100";
+  }
+  
+  // 5. Validate pincode
+  const pincode = formData?.pincode?.toString() || '';
+  const isValidPincode = pincode.length === 6 && 
+                         /^[1-9]\d{5}$/.test(pincode);
+  if (!isValidPincode) {
+    errors.pincode = "Invalid Indian pincode";
+  }
+  
+  // 6. Validate state (with optional chaining and nullish coalescing)
+  const state = (formData?.state ?? '').toString().trim();
+  if (state.length === 0) {
+    errors.state = "State is required";
+  }
+  
+  // 7. Validate agree terms
+  if (!Boolean(formData?.agreeTerms)) {
+    errors.agreeTerms = "Must agree to terms";
+  }
+  
+  const isValid = Object.keys(errors).length === 0;
+  
+  return {
+    isValid: isValid,
+    errors: errors
+  };
 }
